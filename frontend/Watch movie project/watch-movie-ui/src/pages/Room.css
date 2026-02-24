@@ -1,0 +1,46 @@
+.square-btn {
+  width: 50px;
+  height: 50px;
+  font-size: 18px;
+}
+
+.controls {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.icon-btn {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  border: none;
+  background: white;
+  font-size: 20px;
+}
+
+.icon-btn.danger {
+  background: #dc3545;
+  color: white;
+}
+
+.icon-btn span {
+  position: absolute;
+  right: 60px;
+  background: rgba(0,0,0,0.85);
+  color: white;
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 6px;
+  opacity: 0;
+  white-space: nowrap;
+  transition: 0.2s;
+}
+
+.icon-btn:hover span {
+  opacity: 1;
+}

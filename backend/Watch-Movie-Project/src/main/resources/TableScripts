@@ -1,0 +1,48 @@
+use watchMovie_db;
+CREATE TABLE users (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'USER',
+    status VARCHAR(20) DEFAULT 'ACTIVE'
+   
+);
+
+CREATE TABLE movies (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    title VARCHAR(100) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    owner_id BIGINT NOT NULL,
+    duration INT NOT NULL, -- duration in seconds
+    FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE rooms (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    room_name VARCHAR(100) NOT NULL,
+    room_code VARCHAR(10) NOT NULL UNIQUE, 
+    movie_id BIGINT NOT NULL,
+    host_id BIGINT NOT NULL,
+    is_playing BOOLEAN DEFAULT FALSE, -- current play/pause state
+    current_time_player DOUBLE DEFAULT 0,    -- timestamp in seconds
+    status VARCHAR(20) DEFAULT 'ACTIVE', -- ACTIVE or CLOSED
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (host_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE room_participants (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    room_id BIGINT NOT NULL,
+    session_id VARCHAR(100) NOT NULL,
+    display_name VARCHAR(100) NOT NULL,
+    role VARCHAR(20) DEFAULT 'VIEWER',
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_room FOREIGN KEY (room_id) REFERENCES rooms(id)
+);
+
+
+
+
+
