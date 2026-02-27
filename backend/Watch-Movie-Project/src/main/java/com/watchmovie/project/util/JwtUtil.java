@@ -13,16 +13,17 @@ public class JwtUtil {
 
     private static final String SECRET_KEY = "watchMovieSecretKeyWatchMovieSecretKey12345";
 
-    public String generateToken(Long userId, String email) {
+    public String generateToken(Long userId, String email,String username) {
         return Jwts.builder()
                 .setSubject(email)
                 .claim("userId", userId)
+                .claim("username", username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY)
                 .compact();
     }
-
+    
     public String extractEmail(String token) {
     	return Jwts.parser()
     			.setSigningKey(SECRET_KEY)

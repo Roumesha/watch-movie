@@ -2,28 +2,18 @@ import { useState } from "react";
 import axio from "../api/axio";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import {  getUserId } from "../pages/session";
+import { useToast } from "./useToast";
 
 const JoinRoom = () => {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [name, setName] = useState("");
+  const { showToast } = useToast();
 
   const navigate = useNavigate();
-  let guestId=localStorage.getItem("guestId");
-  if(!guestId){
-    guestId = crypto.randomUUID();
-  localStorage.setItem("guestId", guestId);
-  }
 
-  const getSessionId=()=>{
-    let sessionId=localStorage.getItem("sessionId");
-    if(!sessionId){
-      sessionId=crypto.randomUUID();
-      localStorage.setItem("sessionId",sessionId)
-    }
-    return sessionId;
-  }
-
+  
   const handleJoin = async () => {
     if (!roomCode.trim()) {
       setError("Room code is required");
@@ -34,15 +24,22 @@ const JoinRoom = () => {
   return;
 }
 
-    const sessionId=getSessionId();
+   
+    const userId = getUserId();
+    
+    localStorage.setItem("userId", userId);
+    localStorage.setItem("displayName", name);
+
     try{
-      const response = await axio.post("/rooms/join", {
-        roomCode: roomCode,
-        sessionId:sessionId,
-        displayName:name
-      });
       
-      console.log("Joined room:", response.data);
+      const response = await axio.post("/rooms/join", {
+        roomCode,
+        
+        userId,
+        displayName:name
+        
+      });
+      showToast(`Joined room as ${name} 🎬`, "success");
       navigate(`/room/${response.data.roomId}`,{state:response.data});
     }catch (error: unknown) {
     if (axios.isAxiosError(error)) {

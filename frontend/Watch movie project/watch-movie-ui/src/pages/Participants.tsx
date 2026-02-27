@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { RoomParticipant } from "./types";
 import axio from "../api/axio";
+import "./Participants.css"
 
 type ParticipantsProps = {
   roomId: string;
@@ -20,27 +21,36 @@ const Participants=({roomId,onClose}:ParticipantsProps)=>{
 
 }, [roomId]);
 
-    return(
-        <div className="modal  d-block bg-dark  bg-opacity-50">
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5>
-                            Participants
-                        </h5>
-                        <button className="btn-close" onClick={onClose}></button>
-                    </div>
-                    <div className="modal-body">
-                        {participants.map(p=>(
-                            <div key={p.id} className="d-flex justify-content-between mb-2">
-                                <span >{p.displayName}</span>
-                                <span className="badge bg-secondary"> {p.role}</span>
-                                </div>
-                        ))}
-                    </div>
-                </div>
+    return (
+  <div className="participants-overlay">
+    <div className="participants-panel">
+
+      <div className="participants-header">
+        <h4>👥 Participants</h4>
+        <button className="close-btn" onClick={onClose}>✕</button>
+      </div>
+
+      <div className="participants-body">
+        {participants.map((p) => (
+          <div key={p.id} className="participant-row">
+
+            <div className="participant-left">
+              <div className="avatar">
+                {p.displayName.charAt(0).toUpperCase()}
+              </div>
+              <span className="name">{p.displayName}</span>
             </div>
-        </div>
-    )
+
+            <span className={`role-badge ${p.role.toLowerCase()}`}>
+              {p.role}
+            </span>
+
+          </div>
+        ))}
+      </div>
+
+    </div>
+  </div>
+);
 }
 export default Participants;

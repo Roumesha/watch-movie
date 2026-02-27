@@ -35,15 +35,14 @@ public class WebSocketEventListener {
 	@EventListener
 	public void handleDisconnect(SessionDisconnectEvent event) {
 		String sessionId=event.getSessionId();
+		System.out.println(sessionId);
+		if (sessionId == null) return;
 		
 		for(Room room:new ArrayList<>(roomStore.getAllRooms())) {
 			Participant participant =room.getParticipants().remove(sessionId);
 			if(participant==null) continue;
 			String roomCode=room.getRoomId();
 			roomService.removeParticipantFromDB(roomCode, sessionId);
-			if (roomCode == null ) {
-		        return;
-		    }
 			
 			//Case1 HOST left
 			if(participant.getRole()==Role.HOST) {
@@ -54,7 +53,7 @@ public class WebSocketEventListener {
 					    new RoomEvent("ROOM_CLOSED")
 					);
 
-				return ;
+				continue;
 			}
 			
 			//Case2 No participant left
@@ -73,13 +72,11 @@ public class WebSocketEventListener {
 			 List<ParticipantDTO> list = room.getParticipants()
 			         .values()
 			         .stream()
-			         .map(p -> {
-			        	    if (p.getUserId() == null) return null;
-			        	    return new ParticipantDTO(
-			        	            p.getUserId().toString(),
-			        	            p.getRole().name());
-			        	})
-			        	.filter(Objects::nonNull)
+			         .map(p ->  new ParticipantDTO(
+			        	    		p.getDisplayName(), 
+			        	            p.getRole().name())
+			        	)
+			        	
 			        	.toList();
 
 			 messagingTemplate.convertAndSend(

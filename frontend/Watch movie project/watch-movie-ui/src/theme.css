@@ -1,0 +1,113 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: white;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  background-color: #121212;
+  color: white;
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Card */
+.card {
+  background-color: #1e1e1e !important;
+  color: white;
+  border-radius: 12px;
+}
+
+/* Violet Buttons */
+.btn-primary {
+  background-color: #7c3aed !important;
+  border: none !important;
+}
+
+.btn-primary:hover {
+  background-color: #6d28d9 !important;
+}
+
+.btn-outline-primary {
+  border: 1px solid #a855f7 !important;
+  color: #a855f7 !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: #a855f7 !important;
+  color: white !important;
+}
+
+.btn-success {
+  background-color: #8b5cf6 !important;
+  border: none !important;
+}
+
+.btn-danger {
+  background-color: #9333ea !important;
+  border: none !important;
+}
+
+/* Toast Styling */
+.custom-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-weight: 500;
+  animation: fadeIn 0.3s ease-in-out;
+  z-index: 9999;
+}
+
+.custom-toast.success {
+  background-color: #22c55e;
+}
+
+.custom-toast.error {
+  background-color: #ef4444;
+}
+
+.custom-toast.info {
+  background-color: #7c3aed;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.profile-popup {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background-color: #1e1e1e;
+  padding: 10px 15px;
+  border-radius: 8px;
+  min-width: 180px;
+  animation: fadeIn 0.2s ease-in-out;
+  border: 1px solid #7c3aed;
+  z-index: 1000;
+}
+
+.profile-popup small {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.profile-popup::before {
+  content: "";
+  position: absolute;
+  top: -6px;
+  right: 15px;
+  width: 10px;
+  height: 10px;
+  background: #1e1e1e;
+  transform: rotate(45deg);
+  border-left: 1px solid #7c3aed;
+  border-top: 1px solid #7c3aed;
+}

@@ -19,28 +19,99 @@
   height: 48px;
   border-radius: 12px;
   border: none;
-  background: white;
+  background:rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
   font-size: 20px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: rgba(94, 59, 238, 0.8);
+  transform: translateX(-4px) scale(1.05);
+  box-shadow: 0 6px 18px rgba(94, 59, 238, 0.5);
+}
+
+.icon-btn:active {
+  transform: scale(0.95);
 }
 
 .icon-btn.danger {
-  background: #dc3545;
-  color: white;
+  background: rgba(220, 53, 69, 0.9);
 }
 
+.icon-btn.danger:hover {
+  background: #dc3545;
+  box-shadow: 0 6px 18px rgba(220, 53, 69, 0.6);
+}
+
+
+
 .icon-btn span {
-  position: absolute;
-  right: 60px;
-  background: rgba(0,0,0,0.85);
-  color: white;
-  padding: 4px 8px;
-  font-size: 12px;
-  border-radius: 6px;
+ position: absolute;
+  right: 70px;
+  background: linear-gradient(135deg, #1f1f2f, #2e2e4f);
+  color: #fff;
+  padding: 6px 12px;
+  font-size: 13px;
+  border-radius: 8px;
   opacity: 0;
   white-space: nowrap;
-  transition: 0.2s;
+  transition: all 0.25s ease;
+  pointer-events: none;
+  transform: translateX(10px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
 }
 
 .icon-btn:hover span {
   opacity: 1;
+  transform: translateX(0);
 }
+
+.sidebar {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.side-panel {
+  position: absolute;
+  top: 0;
+  right: 60px; /* adjust for sidebar width */
+  width: 300px;
+  height: 100%;
+  background: #111;
+  color: white;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.5);
+  animation: slideIn 0.3s ease forwards;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.icon-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  padding: 4px 7px;
+  border-radius: 50%;
+  min-width: 20px;
+  text-align: center;
+  box-shadow: 0 0 8px rgba(255, 75, 43, 0.7);
+  animation: pulseBadge 1.5s infinite;
+}
+
+

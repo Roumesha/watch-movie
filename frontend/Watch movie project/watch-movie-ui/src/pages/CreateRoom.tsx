@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axio from "../api/axio";
 import type { Movie } from "./types";
+import {  getUserId } from "../pages/session"; 
+import { useToast } from "./useToast";
 
 const CreateRoom=() =>{
   const[roomName,setRoomName]=useState("");
@@ -11,12 +13,16 @@ const CreateRoom=() =>{
   const [movies, setMovies] = useState<Movie[]>([]);
   const [uploading,setUploading]=useState(false);
   const nav=useNavigate();
-  const userId=localStorage.getItem("userId")
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const { showToast } = useToast();
+
+  
+  const userId = getUserId();
 
 
   const fetchMovies=async ()=>{
       try{
+        
         const res=await axio.get<Movie[]>(`/movies/user/${userId}`)
         setMovies(res.data)
         if (res.data.length > 0) {
@@ -32,22 +38,26 @@ const CreateRoom=() =>{
       nav("/login")
       return
     }
-
-    
     fetchMovies();
   },[nav])
+
   const createRoom=async()=>{
      if (!movieId) {
       setMessage("Please select a movie");
       return;
     }
     try{
+      
       const res=await axio.post('/rooms/create',
         {roomName,
-          movieId: Number(movieId)});
-        nav(`/room/${res.data.id}`,{state:res.data});
+          movieId: Number(movieId),
+        userId
+      });
       
-      setMessage(`Room created! Room Code: ${res.data.roomCode}`);
+      localStorage.setItem("userId", userId);
+      localStorage.setItem("displayName", "Host");
+       nav(`/room/${res.data.id}`,{state:res.data});
+      showToast(`Room "${roomName}" created successfully 🎉`, "success");
     }
     catch(error:unknown){
       if(axios.isAxiosError(error)){

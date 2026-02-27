@@ -14,6 +14,7 @@ import org.springframework.stereotype.Controller;
 
 import com.watchmovie.project.dto.ParticipantDTO;
 import com.watchmovie.project.dto.RoomSyncRequest;
+import com.watchmovie.project.entity.RoomEntity;
 import com.watchmovie.project.service.RoomService;
 import com.watchmovie.project.state.Room;
 import com.watchmovie.project.state.RoomStore;
@@ -67,25 +68,32 @@ public class RoomSocketController {
 		
 
 		Role role = Role.valueOf(message.getRole());
-
-		Participant participant =
-		        new Participant(message.getUserId(), sessionId, role);
-
-		room.getParticipants().put(sessionId, participant);
-//		if(participant.getRole()==Role.HOST) {
-//			room.setHostSessionId(sessionId);
-//		}
-		List<ParticipantDTO> list=room.getParticipants()
-				.values().stream().map(p-> new ParticipantDTO(
-						p.getUserId().toString(),
-						p.getRole().name())).toList();
+		String displayName = message.getDisplayName() == null || message.getDisplayName().isBlank() 
+                ? "Guest" : message.getDisplayName();
 		
-		messagingTemplate.convertAndSend("/topic/participants/"+roomCode,list);
+		 // Avoid duplicate join
+        if (!room.getParticipants().containsKey(sessionId)) {
+            Participant participant = new Participant(message.getUserId(), sessionId, role);
+            participant.setDisplayName(displayName);
+            room.getParticipants().put(sessionId, participant);
+
+            roomService.addParticipantToDB(roomCode, message.getUserId(), sessionId, role.name(), displayName);
+        }
+		 
+		
 		if (role == Role.HOST) {
 	        room.setHostSessionId(sessionId);
 	    }
-		System.out.println("User joined room: " + roomCode);
+		List<ParticipantDTO> list=room.getParticipants()
+				.values().stream().map(p-> new ParticipantDTO(
+						p.getDisplayName(),
+						p.getRole().name()
+						)).toList();
 		
+//		messagingTemplate.convertAndSend("/topic/participants/"+roomCode,list);
+		
+		System.out.println("User joined room: " + roomCode);
+		broadcastParticipants(roomCode, room);
 
 	}
 	
@@ -117,5 +125,48 @@ public class RoomSocketController {
 						"playing",room.isPlaying(),
 						"time",room.getCurrentTime()));
 	}
+	
+	 private void broadcastParticipants(String roomCode, Room room) {
+	        List<ParticipantDTO> list = room.getParticipants().values().stream()
+	                .map(p -> new ParticipantDTO(p.getDisplayName(), p.getRole().name()))
+	                .toList();
+	        messagingTemplate.convertAndSend("/topic/participants/" + roomCode, list);
+	    }
+	 
+	 @MessageMapping("/room/{roomCode}/leave")
+	 public void leaveRoom(@DestinationVariable String roomCode,
+	                       SimpMessageHeaderAccessor accessor,
+	                       LeaveMessage message) {
+	     String sessionId = accessor.getSessionId();
+	     Room room = roomStore.getRoom(roomCode);
+	     if (room == null) return;
+
+	     Participant removed = room.getParticipants().remove(sessionId);
+	     if (removed != null) {
+	         roomService.removeParticipantFromDB(roomCode, removed.getSessionId());
+
+	         // If host leaves, close room
+	         if (removed.getRole() == Role.HOST) {
+	             roomService.deleteRoomCompletely(roomCode);
+	             roomStore.deleteRoom(room.getRoomId());
+	             messagingTemplate.convertAndSend(
+	                 "/topic/room/" + room.getRoomId()
+	             );
+	             return;
+	         }
+
+	         // If no participants left, delete room
+	         if (room.getParticipants().isEmpty()) {
+	             roomService.deleteRoomCompletely(roomCode);
+	             roomStore.deleteRoom(room.getRoomId());
+	             return;
+	         }
+
+	         // Broadcast updated list
+	         broadcastParticipants(roomCode, room);
+	     }
+	 }
+
+
 
 }

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../api/axio";
+import { useToast } from "./useToast";
 import { useNavigate } from "react-router-dom";
 function Register(){
  const [username,setUserName]=useState("");
@@ -7,6 +8,7 @@ function Register(){
  const [password,setPassword]=useState("");
  const [message,setMessage]=useState("");
  const navigate=useNavigate();
+ const {showToast}=useToast();
 
  const handleRegister=async()=>{
   if (!username || !email || !password) {
@@ -19,12 +21,13 @@ function Register(){
             email,
             password
         });
-        alert("Registration successful")
+        localStorage.setItem("registerSucess","true");
          navigate("/login");
     }
     catch(error){
-        alert(error|| "Registration failed");
-    }
+        showToast("Registration Failed", "error");
+        console.log(error)
+      }
  }
 
  return(

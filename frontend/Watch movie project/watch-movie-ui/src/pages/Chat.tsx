@@ -9,7 +9,7 @@ const Chat=({onClose}:ChatProps)=>{
       <div className="modal-dialog modal-lg">
         <div className="modal-content">
           <div className="modal-header">
-            <h5>Room Chat</h5>
+            <h5>Room Chat: </h5>
             <button className="btn-close" onClick={onClose}></button>
           </div>
           <div className="modal-body">

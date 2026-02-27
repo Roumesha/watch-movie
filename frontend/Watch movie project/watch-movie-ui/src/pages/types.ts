@@ -50,6 +50,7 @@ export type SyncMessage = {
 export type JwtPayload = {
   sub: string;
   userId: number;
+  username:string
   iat: number;
   exp: number;
 };

@@ -17,6 +17,6 @@ public interface RoomService {
 	RoomEntity findByRoomCode(String roomCode);
 	void removeParticipantFromDB(String roomCode,String sessionId);
 	void deleteRoomCompletely(String roomCode);
-	void addParticipantToDB(String roomCode, Long userId, String sessionId, String role, String displayName);
+	void addParticipantToDB(String roomCode, String userId, String sessionId, String role, String displayName);
 	
 }

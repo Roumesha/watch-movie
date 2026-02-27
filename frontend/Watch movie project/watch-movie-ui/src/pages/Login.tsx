@@ -3,14 +3,14 @@ import API from "../api/axio";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode} from "jwt-decode";
 import type { JwtPayload } from "./types";
-
+import { useToast } from "./useToast";
 
 function Login(){
     const [email,setEmail]=useState("");
     const [password,setPassword]=useState("");
     const [error,setError]=useState("");
     const navigate=useNavigate();
-
+    const {showToast}=useToast();
 
     const handleLogin=async()=>{
       if (!email || !password) {
@@ -26,10 +26,14 @@ function Login(){
             localStorage.setItem("token",token);
            const decoded: JwtPayload = jwtDecode(token);
     localStorage.setItem("userId", String(decoded.userId));
-            navigate("/create"); 
+    localStorage.setItem("loginSuccess","true");
+    localStorage.setItem("displayName",decoded.username)
+            navigate("/"); 
         }
         catch(error){
-            alert(error || "Invalid credentials");
+            showToast("Invalid credentials","error");
+            console.log(error)
+            
         }
     }
     return (

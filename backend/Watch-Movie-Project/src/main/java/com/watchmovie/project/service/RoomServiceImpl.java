@@ -75,12 +75,12 @@ public class RoomServiceImpl implements RoomService{
 
 		roomStore.addRoom(savedRoom.getRoomCode(), socketRoom);
 		
-		RoomParticipantEntity host=new RoomParticipantEntity();
-		host.setRoom(savedRoom);
-		host.setRole("HOST");
-		host.setSessionId(UUID.randomUUID().toString());
-		host.setDisplayName(user.getUsername());
-		roomParticipantRepository.save(host);
+//		RoomParticipantEntity host=new RoomParticipantEntity();
+//		host.setRoom(savedRoom);
+//		host.setRole("HOST");
+//		host.setSessionId(UUID.randomUUID().toString());
+//		host.setDisplayName(user.getUsername());
+//		roomParticipantRepository.save(host);
 		
 		return savedRoom;
 	}
@@ -91,24 +91,24 @@ public class RoomServiceImpl implements RoomService{
 		RoomEntity room=roomRepository.findByRoomCode(request.getRoomCode()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid Room code"));
 		
 		
-		boolean alreadyJoined =
-	            roomParticipantRepository.existsByRoomAndSessionId(
-	                    room,
-	                    request.getSessionId()
-	            );
-
-	    if (!alreadyJoined) {
-	    	RoomParticipantEntity participant=new RoomParticipantEntity();
-	    	participant.setRoom(room);
-			participant.setSessionId(request.getSessionId());
-		    participant.setDisplayName(request.getDisplayName());
-			participant.setRole("VIEWER");
-			participant.setJoinedAt(LocalDateTime.now());
-
-	        roomParticipantRepository.save(participant);
-	        System.out.println("JOIN SESSION: " +participant.getSessionId());
-	    }
-	    
+//		boolean alreadyJoined =
+//	            roomParticipantRepository.existsByRoomAndSessionId(
+//	                    room,
+//	                    request.getSessionId()
+//	            );
+//
+//	    if (!alreadyJoined) {
+//	    	RoomParticipantEntity participant=new RoomParticipantEntity();
+//	    	participant.setRoom(room);
+//			participant.setSessionId(request.getSessionId());
+//		    participant.setDisplayName(request.getDisplayName());
+//			participant.setRole("VIEWER");
+//			participant.setJoinedAt(LocalDateTime.now());
+//
+//	        roomParticipantRepository.save(participant);
+//	        System.out.println("JOIN SESSION: " +participant.getSessionId());
+//	    }
+//	    
 
 		
 		return new RoomResponseDTO(
@@ -221,8 +221,29 @@ public class RoomServiceImpl implements RoomService{
 	}
 
 	@Override
-	public void addParticipantToDB(String roomCode, Long userId, String sessionId, String role, String displayName) {
+	@Transactional
+	public void addParticipantToDB(String roomCode, String userId, String sessionId, String role, String displayName) {
 		// TODO Auto-generated method stub
+		RoomEntity room=roomRepository.findByRoomCode(roomCode).orElse(null);
+		if(room==null) return;
+		boolean exists = roomParticipantRepository
+	            .existsByRoomAndSessionId(room, sessionId);
+
+	    if (exists) return;
+	    if (displayName == null || displayName.isBlank()) {
+	        displayName = "Guest";
+	    }
+
+	    RoomParticipantEntity participant = new RoomParticipantEntity();
+	    participant.setRoom(room);
+	    participant.setSessionId(sessionId);   
+	    participant.setDisplayName(displayName);
+	    participant.setRole(role);
+	    participant.setJoinedAt(LocalDateTime.now());
+
+	    roomParticipantRepository.save(participant);
+	    System.out.println("Participant saved: " + displayName + " -> " + sessionId);
+		
 		
 		
 	}

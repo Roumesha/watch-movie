@@ -8,6 +8,7 @@ public class ParticipantDTO {
 		this.displayName=displayName;
 		this.role=role;
 	}
+	
 	public String getDisplayName() {
 		return displayName;
 	}

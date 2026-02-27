@@ -1,18 +1,19 @@
 package com.watchmovie.project.state;
 
 public class Participant {
-	private Long userId;
+	private String userId;
 	private String sessionId;
+	private String displayName;
 	private Role role;
-	public Participant(Long userId, String sessionId, Role role) {
+	public Participant(String userId, String sessionId, Role role) {
         this.userId = userId;
         this.sessionId = sessionId;
         this.role = role;
     }
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 	public String getSessionId() {
@@ -30,4 +31,11 @@ public class Participant {
 	public boolean isHost() {
         return role == Role.HOST;
     }
+	public String getDisplayName() {
+		return displayName;
+	}
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
+	}
+	
 }
