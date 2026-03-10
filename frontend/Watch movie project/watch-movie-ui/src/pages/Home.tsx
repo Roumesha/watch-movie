@@ -39,7 +39,7 @@ function Home(){
 
  
     return(
-        <div className="d-flex flex-column min-vh-100">
+        <div className="d-flex flex-column ">
             <div
         className="d-flex justify-content-between align-items-center p-3 bg-dark shadow-sm "
       >
@@ -80,7 +80,7 @@ function Home(){
         </div>
 
         
-        <div className="container d-flex justify-content-center align-items-center flex-grow-1">
+        <div className="container d-flex justify-content-center mt-5 align-items-center flex-grow-1">
       <div className="card shadow p-4 text-center" style={{ width: "350px" }}>
         <h3 className="mb-4">🎬 Watch Movie Together</h3>
         <button

@@ -226,9 +226,9 @@ function Room() {
 
       <div className="sidebar">
   <IconButton label="Invite Friends" onClick={handleInvite}>📋</IconButton>
-  <IconButton label="Room Info" onClick={() => setShowDetails(true)}>ℹ️</IconButton>
+  <IconButton label="Room Info" onClick={() => setShowDetails(prev=>!prev)}>ℹ️</IconButton>
   {/* <IconButton label={`Participants (${participants.length})`} onClick={() => setShowParticipants(true)}>👥</IconButton> */}
-  <button className="icon-btn" onClick={()=>setShowParticipants(true)}>
+  <button className="icon-btn" onClick={()=>setShowParticipants(prev=>!prev)}>
   👥
   {participants.length > 0 && (
     <div className="icon-badge">
@@ -237,7 +237,7 @@ function Room() {
   )}
   <span>Participants</span>
 </button>
-  <IconButton label="Chat" onClick={() => setShowChat(true)}>💬</IconButton>
+  <IconButton label="Chat" onClick={() => setShowChat(prev=>!prev)}>💬</IconButton>
   <IconButton label="Leave Room" danger onClick={handleLeave}>🚪</IconButton>
 </div>
 
