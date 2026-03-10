@@ -17,46 +17,90 @@ function Room() {
   const { state } = useLocation() as { state: RoomType };
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const [showDetails, setShowDetails] = useState(false);
-  const [showParticipants, setShowParticipants] = useState(false);
-  const [showChat, setShowChat] = useState(false);
+  const [activePanel, setActivePanel] = useState<
+    "details" | "participants" | "chat" | null
+  >(null);
+
   const [participants, setParticipants] = useState<RoomParticipant[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [rooms, setRooms] = useState<RoomData | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
-//   const [activePanel, setActivePanel] = useState<
-//   "invite" | "details" | "participants" | "chat" | null
-// >(null);
 
   const room: RoomType = state;
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const clientRef = useRef<Client | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const userId = localStorage.getItem("userId") || getUserId();
 
+  const togglePanel = (panel: "details" | "participants" | "chat") => {
+    setActivePanel((prev) => (prev === panel ? null : panel));
+  };
+
+ const toggleFullscreen = async () => {
+  if (!containerRef.current) return;
+
+  if (!document.fullscreenElement) {
+    await containerRef.current.requestFullscreen();
+    setIsFullscreen(true);
+  } else {
+    await document.exitFullscreen();
+    setIsFullscreen(false);
+  }
+};
+
+  const togglePlayPause = () => {
+  if (!videoRef.current) return;
+
+  const video = videoRef.current;
+
+  if (video.paused) {
+    video.play().catch(() => {});
+  } else {
+    video.pause();
+  }
+};
+
+useEffect(() => {
+  const handleChange = () => {
+    setIsFullscreen(!!document.fullscreenElement);
+  };
+
+  document.addEventListener("fullscreenchange", handleChange);
+
+  return () => {
+    document.removeEventListener("fullscreenchange", handleChange);
+  };
+}, []);
+
   const handleSync = (data: SyncMessage) => {
     if (!videoRef.current) return;
+
     setIsSyncing(true);
     const video = videoRef.current;
+
     const timeDiff = Math.abs(video.currentTime - data.time);
 
     if (timeDiff > 0.5) {
       video.currentTime = data.time;
     }
+
     if (data.playing) {
-      video.play().catch((error) => console.log("Autoplay blocked:", error));
+      video.play().catch((err) => console.log("Autoplay blocked", err));
     } else {
       video.pause();
     }
+
     setTimeout(() => setIsSyncing(false), 500);
   };
 
   const handleInvite = () => {
-  navigator.clipboard.writeText(`${window.location.origin}/room/${roomId}`);
-  showToast("Invite link copied to clipboard 📋", "info");
-};
-
+    navigator.clipboard.writeText(`${window.location.origin}/room/${roomId}`);
+    showToast("Invite link copied 📋", "info");
+  };
 
   const isHost = () => {
     const uid = getUserId();
@@ -65,10 +109,12 @@ function Room() {
 
   useEffect(() => {
     if (!roomId) return;
+
     axio.get(`/rooms/getRoom/${roomId}`).then((res) => setRooms(res.data));
-    axio.get(`/rooms/${roomId}/participants`).then((res) =>
-      setParticipants(res.data)
-    );
+
+    axio
+      .get(`/rooms/${roomId}/participants`)
+      .then((res) => setParticipants(res.data));
   }, [roomId]);
 
   useEffect(() => {
@@ -76,14 +122,19 @@ function Room() {
 
     const client = new Client({
       webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+
       reconnectDelay: 5000,
+
       onConnect: (frame) => {
         const stompSession = frame.headers["session"];
+
         if (stompSession) {
           localStorage.setItem("sessionId", stompSession);
         }
+
         const currentSessionId = localStorage.getItem("sessionId");
-        console.log("Connected to websocket with sessionId:", currentSessionId);
+
+        console.log("Connected with sessionId:", currentSessionId);
 
         const displayName = localStorage.getItem("displayName") || "Guest";
 
@@ -92,7 +143,6 @@ function Room() {
           handleSync(data);
         });
 
-        // JOIN room
         client.publish({
           destination: `/app/room/${room.roomCode}/join`,
           body: JSON.stringify({
@@ -103,40 +153,38 @@ function Room() {
           }),
         });
 
-        // REQUEST SYNC
         client.publish({
           destination: `/app/room/${room.roomCode}/sync-request`,
           body: "",
         });
 
-        // Participant updates
         client.subscribe(`/topic/participants/${room.roomCode}`, (message) => {
-          const updatedList : RoomParticipant[] = JSON.parse(message.body);
+          const updatedList: RoomParticipant[] = JSON.parse(message.body);
+
           const prev = participants;
-         
 
-            //detect join
-            if(updatedList.length>prev.length){
-              const newUser=updatedList.find(
-                (u:RoomParticipant)=>!prev.some((p: RoomParticipant)=>p.id===u.id)
-              )
-              if(newUser){
-                showToast(`${newUser.displayName} joined the room 👋`, "info");
-              }
+          if (updatedList.length > prev.length) {
+            const newUser = updatedList.find(
+              (u) => !prev.some((p) => p.id === u.id)
+            );
+
+            if (newUser) {
+              showToast(`${newUser.displayName} joined 👋`, "info");
             }
+          }
 
-            // Detect leave
-    if (updatedList.length < prev.length) {
-      const leftUser = prev.find(
-        (p: RoomParticipant) => !updatedList.some((u: RoomParticipant) => u.id === p.id)
-      );
-      if (leftUser) {
-        showToast(`${leftUser.displayName} left the room 🚪`, "error");
-      }
-    }
-    setParticipants(updatedList);
-    
-          });
+          if (updatedList.length < prev.length) {
+            const leftUser = prev.find(
+              (p) => !updatedList.some((u) => u.id === p.id)
+            );
+
+            if (leftUser) {
+              showToast(`${leftUser.displayName} left 🚪`, "error");
+            }
+          }
+
+          setParticipants(updatedList);
+        });
       },
     });
 
@@ -144,17 +192,13 @@ function Room() {
     clientRef.current = client;
 
     return () => {
-      client.deactivate().catch((err) =>
-        console.log("Error during cleanup:", err)
-      );
+      client.deactivate().catch((err) => console.log("Cleanup error", err));
     };
   }, [roomId, rooms, userId]);
 
   const sendControl = (playing: boolean) => {
-    if (!videoRef.current || !clientRef.current || !clientRef.current.connected) {
-      console.log("CLIENT NOT READY");
-      return;
-    }
+    if (!videoRef.current || !clientRef.current?.connected) return;
+
     clientRef.current.publish({
       destination: `/app/room/${room.roomCode}/control`,
       body: JSON.stringify({
@@ -165,34 +209,33 @@ function Room() {
   };
 
   const handleLeave = async () => {
-  try {
-    if (clientRef.current && clientRef.current.connected) {
-      clientRef.current.publish({
-        destination: `/app/room/${room.roomCode}/leave`,
-        body: JSON.stringify({
-          userId,
-          displayName: localStorage.getItem("displayName") || "Guest",
-        }),
-      });
-      await clientRef.current.deactivate();
+    try {
+      if (clientRef.current?.connected) {
+        clientRef.current.publish({
+          destination: `/app/room/${room.roomCode}/leave`,
+          body: JSON.stringify({
+            userId,
+            displayName: localStorage.getItem("displayName") || "Guest",
+          }),
+        });
+
+        await clientRef.current.deactivate();
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      showToast("You left the room", "info");
+      navigate("/");
     }
-  } catch (err) {
-    console.log("Leave failed", err);
-  } finally {
-    showToast("You left the room", "info");
-    navigate("/");
-  }
-};
+  };
 
   if (!rooms || !rooms.movie.id) return null;
 
   return (
-    <div className="vh-100 position-relative bg-black">
+    <div ref={containerRef} className="vh-100 position-relative bg-black" onClick={togglePlayPause}>
       {!hasInteracted && (
-        <div
-          className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark"
-          style={{ zIndex: 10 }}
-        >
+        <div className="position-absolute top-0 start-0 w-100 h-100 d-flex justify-content-center align-items-center bg-dark"
+        style={{ zIndex: 10 }}>
           <button
             className="btn btn-light"
             onClick={() => {
@@ -204,10 +247,15 @@ function Room() {
           </button>
         </div>
       )}
+
       <video
         ref={videoRef}
         className="w-100 h-100"
         controls={!!isHost()}
+        controlsList="nofullscreen noplaybackrate nodownload"
+        disablePictureInPicture
+         playsInline
+         webkit-playsinline="true"
         preload="auto"
         src={`http://localhost:8080/movies/stream/${rooms?.movie.id}`}
         onPlay={() => {
@@ -224,44 +272,64 @@ function Room() {
         }}
       />
 
-      <div className="sidebar">
-  <IconButton label="Invite Friends" onClick={handleInvite}>📋</IconButton>
-  <IconButton label="Room Info" onClick={() => setShowDetails(prev=>!prev)}>ℹ️</IconButton>
-  {/* <IconButton label={`Participants (${participants.length})`} onClick={() => setShowParticipants(true)}>👥</IconButton> */}
-  <button className="icon-btn" onClick={()=>setShowParticipants(prev=>!prev)}>
-  👥
-  {participants.length > 0 && (
-    <div className="icon-badge">
-      {participants.length}
-    </div>
-  )}
-  <span>Participants</span>
-</button>
-  <IconButton label="Chat" onClick={() => setShowChat(prev=>!prev)}>💬</IconButton>
-  <IconButton label="Leave Room" danger onClick={handleLeave}>🚪</IconButton>
-</div>
+      <div className="sidebar" onClick={(e) => e.stopPropagation()}>
+        <IconButton label="Invite Friends" onClick={handleInvite}>📋</IconButton>
 
+        <IconButton
+          label="Room Info"
+          onClick={() => togglePanel("details")}
+        >
+          ℹ️
+        </IconButton>
 
+        <button
+          className="icon-btn"
+          onClick={() => togglePanel("participants")}
+        >
+          👥
+          {participants.length > 0 && (
+            <div className="icon-badge">{participants.length}</div>
+          )}
+          <span>Participants</span>
+        </button>
 
+        <IconButton label="Chat" onClick={() => togglePanel("chat")}>
+          💬
+        </IconButton>
 
+        <IconButton  label={isFullscreen ? "Exit Fullscreen" : "Fullscreen"} onClick={toggleFullscreen}>
+          {isFullscreen ? "🗗" : "⛶"}
+        </IconButton>
 
-      {showDetails &&
-       ( <div className="side-panel">
-         <RoomDetails room={room} 
-         onClose={() => setShowDetails(false)} 
-         participantCount={participants.length} />
-          </div> )}
-      {showParticipants && 
-      ( <div className="side-panel"> 
-      <Participants roomId={roomId!} 
-      onClose={() => setShowParticipants(false)}
-       /> </div>
-        )}
-         {showChat && ( 
-          <div className="side-panel"> 
-          <Chat roomId={roomId!} 
-          onClose={() => setShowChat(false)} /> </div> )}
-     
+        <IconButton label="Leave Room" danger onClick={handleLeave}>
+          🚪
+        </IconButton>
+      </div>
+
+      {activePanel === "details" && (
+        <div className="side-panel">
+          <RoomDetails
+            room={room}
+            onClose={() => setActivePanel(null)}
+            participantCount={participants.length}
+          />
+        </div>
+      )}
+
+      {activePanel === "participants" && (
+        <div className="side-panel">
+          <Participants
+            roomId={roomId!}
+            onClose={() => setActivePanel(null)}
+          />
+        </div>
+      )}
+
+      {activePanel === "chat" && (
+        <div className="side-panel">
+          <Chat roomId={roomId!} onClose={() => setActivePanel(null)} />
+        </div>
+      )}
     </div>
   );
 }

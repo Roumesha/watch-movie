@@ -43,7 +43,7 @@ function Home(){
             <div
         className="d-flex justify-content-between align-items-center p-3 bg-dark shadow-sm "
       >
-        <h3>🎬 Watch Party</h3>
+        <h3>🎬 Watch Nest</h3>
 
         <div>
           {!token ? (

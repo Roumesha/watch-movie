@@ -115,3 +115,20 @@
 }
 
 
+@media (max-width: 768px) {
+
+  .sidebar {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .icon-btn span {
+    display: none;
+  }
+
+}
+
