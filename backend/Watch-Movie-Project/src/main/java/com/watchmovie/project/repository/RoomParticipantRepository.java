@@ -20,5 +20,6 @@ public interface RoomParticipantRepository extends JpaRepository<RoomParticipant
 	void deleteByRoomAndSessionId(RoomEntity room,String sessionId);
 	void deleteAllByRoom(RoomEntity room);
 	void deleteBySessionId(String sessionId);
+	void deleteByRoomAndDisplayName(RoomEntity room, String displayName);
 
 }

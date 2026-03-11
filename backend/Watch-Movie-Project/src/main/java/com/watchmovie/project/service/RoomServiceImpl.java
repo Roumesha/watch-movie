@@ -74,13 +74,7 @@ public class RoomServiceImpl implements RoomService{
 		        new com.watchmovie.project.state.Room(savedRoom.getId().toString());
 
 		roomStore.addRoom(savedRoom.getRoomCode(), socketRoom);
-		
-//		RoomParticipantEntity host=new RoomParticipantEntity();
-//		host.setRoom(savedRoom);
-//		host.setRole("HOST");
-//		host.setSessionId(UUID.randomUUID().toString());
-//		host.setDisplayName(user.getUsername());
-//		roomParticipantRepository.save(host);
+	
 		
 		return savedRoom;
 	}
@@ -90,25 +84,7 @@ public class RoomServiceImpl implements RoomService{
 	public RoomResponseDTO joinRoom(JoinRoomRequest request) {
 		RoomEntity room=roomRepository.findByRoomCode(request.getRoomCode()).orElseThrow(()->new ResponseStatusException(HttpStatus.BAD_REQUEST,"Invalid Room code"));
 		
-		
-//		boolean alreadyJoined =
-//	            roomParticipantRepository.existsByRoomAndSessionId(
-//	                    room,
-//	                    request.getSessionId()
-//	            );
-//
-//	    if (!alreadyJoined) {
-//	    	RoomParticipantEntity participant=new RoomParticipantEntity();
-//	    	participant.setRoom(room);
-//			participant.setSessionId(request.getSessionId());
-//		    participant.setDisplayName(request.getDisplayName());
-//			participant.setRole("VIEWER");
-//			participant.setJoinedAt(LocalDateTime.now());
-//
-//	        roomParticipantRepository.save(participant);
-//	        System.out.println("JOIN SESSION: " +participant.getSessionId());
-//	    }
-//	    
+
 
 		
 		return new RoomResponseDTO(
@@ -226,10 +202,12 @@ public class RoomServiceImpl implements RoomService{
 		// TODO Auto-generated method stub
 		RoomEntity room=roomRepository.findByRoomCode(roomCode).orElse(null);
 		if(room==null) return;
-		boolean exists = roomParticipantRepository
-	            .existsByRoomAndSessionId(room, sessionId);
-
-	    if (exists) return;
+//		boolean exists = roomParticipantRepository
+//	            .existsByRoomAndSessionId(room, sessionId);
+//
+//	    if (exists) return;
+		roomParticipantRepository.deleteByRoomAndDisplayName(room, displayName);
+		
 	    if (displayName == null || displayName.isBlank()) {
 	        displayName = "Guest";
 	    }

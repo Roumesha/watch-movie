@@ -31,8 +31,10 @@ const Participants=({roomId,onClose}:ParticipantsProps)=>{
       </div>
 
       <div className="participants-body">
-        {participants.map((p) => (
-          <div key={p.id} className="participant-row">
+        {[...participants]
+        .sort((a,b)=>(a.role==="HOST"?-1:b.role==="HOST"?1:0))
+        .map((p) => (
+          <div key={p.displayName+p.role} className="participant-row">
 
             <div className="participant-left">
               <div className="avatar">

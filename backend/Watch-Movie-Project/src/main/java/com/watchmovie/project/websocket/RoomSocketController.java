@@ -70,15 +70,17 @@ public class RoomSocketController {
 		Role role = Role.valueOf(message.getRole());
 		String displayName = message.getDisplayName() == null || message.getDisplayName().isBlank() 
                 ? "Guest" : message.getDisplayName();
+		room.getParticipants().values()
+		.removeIf(p->p.getDisplayName().equals(displayName));
 		
 		 // Avoid duplicate join
-        if (!room.getParticipants().containsKey(sessionId)) {
+        
             Participant participant = new Participant(message.getUserId(), sessionId, role);
             participant.setDisplayName(displayName);
             room.getParticipants().put(sessionId, participant);
 
             roomService.addParticipantToDB(roomCode, message.getUserId(), sessionId, role.name(), displayName);
-        }
+        
 		 
 		
 		if (role == Role.HOST) {

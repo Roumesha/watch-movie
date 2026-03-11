@@ -64,6 +64,14 @@ function Room() {
   }
 };
 
+const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Prevent clicks from sidebar, buttons, or other elements
+    if (e.target !== e.currentTarget) return;
+
+    togglePlayPause();
+  };
+
+
 useEffect(() => {
   const handleChange = () => {
     setIsFullscreen(!!document.fullscreenElement);
@@ -136,7 +144,9 @@ useEffect(() => {
 
         console.log("Connected with sessionId:", currentSessionId);
 
-        const displayName = localStorage.getItem("displayName") || "Guest";
+        const displayName = isHost()
+  ? rooms?.host?.email?.split('@')[0]||"HOST"
+  : localStorage.getItem("displayName") || "Guest";
 
         client.subscribe(`/topic/room/${room.roomCode}`, (message) => {
           const data: SyncMessage = JSON.parse(message.body);
@@ -247,7 +257,7 @@ useEffect(() => {
           </button>
         </div>
       )}
-
+  <div  className="video-container" onClick={handleClick}>
       <video
         ref={videoRef}
         className="w-100 h-100"
@@ -330,6 +340,7 @@ useEffect(() => {
           <Chat roomId={roomId!} onClose={() => setActivePanel(null)} />
         </div>
       )}
+    </div>
     </div>
   );
 }

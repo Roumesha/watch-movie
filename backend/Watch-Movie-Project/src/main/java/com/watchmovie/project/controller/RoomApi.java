@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.watchmovie.project.dto.CreateRoomRequest;
 import com.watchmovie.project.dto.JoinRoomRequest;
+import com.watchmovie.project.dto.ParticipantDTO;
 import com.watchmovie.project.dto.RoomResponseDTO;
 import com.watchmovie.project.dto.RoomSyncRequest;
 import com.watchmovie.project.entity.RoomEntity;
@@ -54,8 +55,15 @@ public class RoomApi {
 	}
 	
 	@GetMapping("/{roomId}/participants")
-	public List<RoomParticipantEntity> getParticipants(@PathVariable Long roomId) {
-		return roomService.getParticipants(roomId);
+	public List<ParticipantDTO> getParticipants(@PathVariable Long roomId) {
+
+	    return roomService.getParticipants(roomId)
+	            .stream()
+	            .map(p -> new ParticipantDTO(
+	                    p.getDisplayName(),
+	                    p.getRole()
+	            ))
+	            .toList();
 	}
 	
 	@DeleteMapping("/leave")
