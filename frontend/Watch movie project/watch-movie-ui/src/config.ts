@@ -1,0 +1,1 @@
+export const BASE_URL = "https://watch-movie-hodo.onrender.com";

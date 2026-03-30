@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:8080",
+ baseURL: "https://watch-movie-hodo.onrender.com",
 });
 
 // 🔐 Automatically attach JWT

@@ -22,12 +22,14 @@ function Login(){
                 email,
                 password
             })
-            const token=response.data;
+           const token = response.data?.trim();
             localStorage.setItem("token",token);
            const decoded: JwtPayload = jwtDecode(token);
     localStorage.setItem("userId", String(decoded.userId));
     localStorage.setItem("loginSuccess","true");
     localStorage.setItem("displayName",decoded.username)
+    console.log("TOKEN:", token);
+console.log("DECODED:", decoded);
             navigate("/"); 
         }
         catch(error){

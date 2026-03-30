@@ -11,6 +11,7 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { getUserId } from "../pages/session";
 import { useToast } from "./useToast";
+import { BASE_URL } from "../config";
 
 function Room() {
   const { roomId } = useParams();
@@ -129,7 +130,7 @@ useEffect(() => {
     if (!roomId || !rooms || !userId) return;
 
     const client = new Client({
-      webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+      webSocketFactory: () => new SockJS(`${BASE_URL}/ws`),
 
       reconnectDelay: 5000,
 
@@ -267,7 +268,7 @@ useEffect(() => {
          playsInline
          webkit-playsinline="true"
         preload="auto"
-        src={`http://localhost:8080/movies/stream/${rooms?.movie.id}`}
+        src={`${BASE_URL}/movies/stream/${rooms?.movie.id}`}
         onPlay={() => {
           if (!isHost() || isSyncing) return;
           sendControl(true);
