@@ -1,11 +1,20 @@
-# Use Java 17
-FROM eclipse-temurin:17-jdk-jammy
+# Step 1: Build using Maven
+FROM maven:3.9.9-eclipse-temurin-17 AS builder
 
-# Set working directory
 WORKDIR /app
 
-# Copy jar file
-COPY target/Watch-Movie-Project-0.0.1-SNAPSHOT.jar app.jar
+# Copy all files
+COPY . .
 
-# Run the jar
+# Build jar
+RUN mvn clean package -DskipTests
+
+# Step 2: Run the app
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+# Copy jar from builder
+COPY --from=builder /app/target/*.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
