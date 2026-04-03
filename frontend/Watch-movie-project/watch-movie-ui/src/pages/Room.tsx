@@ -29,7 +29,8 @@ function Room() {
   const [rooms, setRooms] = useState<RoomData | null>(null);
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  const room: RoomType = state;
+  // const room: RoomType = state;
+  const [room, setRoom] = useState<RoomType | null>(state || null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const clientRef = useRef<Client | null>(null);
@@ -119,11 +120,27 @@ useEffect(() => {
   useEffect(() => {
     if (!roomId) return;
 
-    axio.get(`/rooms/getRoom/${roomId}`).then((res) => setRooms(res.data));
+    axio.get(`/rooms/getRoom/${roomId}`).then((res) => {
+    setRooms(res.data);
+
+    // ✅ fallback if state is missing
+    if (!room) {
+      setRoom({
+        id: res.data.id,
+        roomName: res.data.roomName,
+        roomCode: res.data.roomCode,
+        host: res.data.host,
+        movieId: res.data.movie.id,
+        currentTime: res.data.currentTimePlayer,
+      });
+    }
+  });
 
     axio
       .get(`/rooms/${roomId}/participants`)
       .then((res) => setParticipants(res.data));
+
+      
   }, [roomId]);
 
   useEffect(() => {
@@ -148,6 +165,8 @@ useEffect(() => {
         const displayName = isHost()
   ? rooms?.host?.email?.split('@')[0]||"HOST"
   : localStorage.getItem("displayName") || "Guest";
+
+if (!room) return ;
 
         client.subscribe(`/topic/room/${room.roomCode}`, (message) => {
           const data: SyncMessage = JSON.parse(message.body);
@@ -209,7 +228,7 @@ useEffect(() => {
 
   const sendControl = (playing: boolean) => {
     if (!videoRef.current || !clientRef.current?.connected) return;
-
+    if (!room) return ;
     clientRef.current.publish({
       destination: `/app/room/${room.roomCode}/control`,
       body: JSON.stringify({
@@ -221,6 +240,7 @@ useEffect(() => {
 
   const handleLeave = async () => {
     try {
+      if (!room) return ;
       if (clientRef.current?.connected) {
         clientRef.current.publish({
           destination: `/app/room/${room.roomCode}/leave`,
@@ -317,7 +337,7 @@ useEffect(() => {
         </IconButton>
       </div>
 
-      {activePanel === "details" && (
+      {activePanel === "details" && room && (
         <div className="side-panel">
           <RoomDetails
             room={room}
