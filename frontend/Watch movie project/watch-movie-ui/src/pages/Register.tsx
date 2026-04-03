@@ -21,7 +21,7 @@ function Register(){
             email,
             password
         });
-        localStorage.setItem("registerSucess","true");
+        localStorage.setItem("registerSuccess","true");
          navigate("/login");
     }
     catch(error){
